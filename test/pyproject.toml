@@ -1,0 +1,46 @@
+[project]
+version = "0.1"
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-fail-under=85 --cov-report=html"
+testpaths = [
+    "test"
+]
+[tool.coverage.run]
+omit = [
+    "src/applicationproperty.py",
+    "src/postgresconnection.py"
+    ]
+
+[tool.pylint]
+    [tool.pylint.MASTER]
+	extension-pkg-whitelist = []
+
+	[tool.pylint.'TYPECHECK']
+	ignored-modules = []
+
+	[tool.pylint.'REPORTS']
+	# Taken from https://github.com/jenkinsci/warnings-ng-plugin/blob/master/src/main/java/io/jenkins/plugins/analysis/warnings/PyLint.java#L88
+	msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}"
+
+	[tool.pylint.'FORMAT']
+	# Maximum number of characters on a single line.
+	max-line-length=120
+	# Maximum number of arguments that a function should take
+	max-args=7
+
+	[tool.pylint.basic]
+	argument-rgx="(?P<snake>[a-z_]+)" # full snake-case, allowing short variable names
+	variable-rgx="(?P<snake>[a-z_]+)" # full snake-case, allowing short variable names
+
+	[tool.pylint."MESSAGES CONTROL"]
+	# fixme - Some TODO's might be urgent, but not all, so skip
+	# line-too-long - Some lines make more sense not-split
+	# too-few-public-methods - It's useful to have stub classes sometimes
+	# pointless-string-statement - Seems to be bugged in pylint at the moment
+	disable=[
+	"fixme",
+	"line-too-long",
+	"too-few-public-methods",
+	"pointless-string-statement",
+	]
