@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+        environment {
+        //once you sign up for Docker hub, use that user_id here
+        registry = "tharav/Test-project"
+        //- update your credentials ID after creating credentials for connecting to Docker Hub
+        registryCredential = 'docker'
+        dockerImage = ''
+    }
+    stages {
+
+        stage ('Build docker image') {
+            steps {
+                script {
+                dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                }
+            }
+        }
+       
+         // Uploading Docker images into Docker Hub
+    stage('Upload Image') {
+     steps{   
+         script {
+            docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+            }
+        }
+      }
+    }
+
+    stage ('K8S Deploy') {
+       	steps {
+            withKubeConfig([credentialsId: 'K8S', serverUrl:'https://753EBD7F507F0653D0D88D4D6E7E1E1D.gr7.us-east-1.eks.amazonaws.com']) {
+		    sh 'kubectl apply -f k8s-deployment.yaml'
+		    sh 'kubectl set image deployments/Test-project-deployment-v2 Test-project-v2=tharav/iam:$BUILD_NUMBER -n tharav-dev'
+            }
+        }
+    }
+  
+    }  
+}
+
+always {
+  // remove built docker image and prune system
+  print 'Cleaning up the Docker system.'
+  sh 'docker system prune -f'
+}
