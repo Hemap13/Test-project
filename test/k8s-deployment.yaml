@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Test-project-deployment-v2
+  namespace: tharav-dev
+  labels:
+    app: Test-project-v2
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # how many pods we can add at a time
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: Test-project-v2
+  template:
+    metadata:
+      labels:
+        app: Test-Project-v2
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: Test-project-v2
+        image: tharav/Test-project:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9111
+        envFrom:
+        - secretRef:
+            name: tharav-secrets
+        volumeMounts:
+          - mountPath: /tharav-shared
+            name: tharav-shared
+      volumes:
+        - name: tharav-shared
+          persistentVolumeClaim:
+            claimName: tharav-shared-claim-v2
+# service type loadbalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: Test-project-svc-v2
+  namespace: tharav-dev
+  labels:
+    app: Test-project-v2
+spec:
+  selector:
+    app: Test-project-v2
+  ports:
+    - protocol: TCP
+      port: 9111
+      targetPort: 9111
+      nodePort: 32005
+  type: NodePort
