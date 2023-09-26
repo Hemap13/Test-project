@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+    stages {
+        stage ('Running coding standards and unit test') {
+        	steps {
+                	withPythonEnv('python3') {
+                        sh "pip3 install -r requirements.txt"
+                        sh "./build.sh"
+                	}
+		}
+	}
+    }  
+}
+
+always {
+  	rm -rf .coverage .pytest_cache
+}
